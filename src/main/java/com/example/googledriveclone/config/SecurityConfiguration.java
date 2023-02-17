@@ -21,7 +21,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/", "/login").permitAll()
+                        .requestMatchers("/", "/login", "/static/**").permitAll()
                         .anyRequest().authenticated()
                   )
                 .formLogin()
@@ -29,7 +29,7 @@ public class SecurityConfiguration {
                 .loginProcessingUrl("/perform-login")
                 .usernameParameter("user")
                 .passwordParameter("pass")
-                .defaultSuccessUrl("/")
+                .defaultSuccessUrl("/profile")
                 .permitAll()
                 .and()
                 .logout()

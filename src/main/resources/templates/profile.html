@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${title}"></title>
-</head>
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title >Главная страница</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
+<div th:replace="/template-part/navigation-menu :: nav"></div>
+
 <h1>User profile</h1>
+
+<div th:insert="/template-part/footer :: footer"></div>
 </body>
 </html>

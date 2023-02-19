@@ -1,6 +1,6 @@
 package com.example.googledriveclone.controller;
 
-import com.example.googledriveclone.dto.UserRequest;
+import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.services.Impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,19 +20,28 @@ public class RegistrationController {
 
     @GetMapping("/registration")
     private String index(Model model){
-        model.addAttribute("registrationForm", new UserRequest());
+        model.addAttribute("registrationForm", new UserDto());
         return "registration";
     }
 
     @PostMapping("/registration")
-    private String registration(@ModelAttribute("registrationForm") @Valid UserRequest userRequest,
-                                BindingResult bindingResult
+    private String registration(@ModelAttribute("registrationForm") @Valid UserDto userDto,
+                                BindingResult bindingResult,
+                                Model model
                                ){
         if(bindingResult.hasErrors()){
             return "registration";
         }
 
-        userService.createUser(userRequest);
-        return "index";
+        if(!userDto.getPassword().equals(userDto.getPasswordConfirmation())){
+            model.addAttribute("passIsNotConfirm", "Пароли не совпадают!");
+            return "registration";
+        }
+        if(!userService.createUser(userDto)){
+            model.addAttribute("userExists", "Пользовател уже существует!");
+            return "registration";
+        }
+
+        return "redirect:/";
     }
 }

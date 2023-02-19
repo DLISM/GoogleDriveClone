@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -17,19 +18,19 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
     @Autowired
     private UserService userDetailsService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/", "/login", "/static/**").permitAll()
+                        .requestMatchers("/", "/registration","/login", "/static/**").permitAll()
                         .anyRequest().authenticated()
                   )
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/perform-login")
-                .usernameParameter("user")
-                .passwordParameter("pass")
                 .defaultSuccessUrl("/profile")
                 .permitAll()
                 .and()
@@ -45,7 +46,7 @@ public class SecurityConfiguration {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder
                 .userDetailsService(userDetailsService)
-                .passwordEncoder(NoOpPasswordEncoder.getInstance());
+                .passwordEncoder(passwordEncoder.getPasswordEncoder());
         return authenticationManagerBuilder.build();
     }
 

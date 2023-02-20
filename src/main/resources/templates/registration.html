@@ -12,22 +12,31 @@
                 <h2>Регистрация</h2>
                 <form name="registrationForm" th:action="@{/registration}" th:method="POST" th:object="${registrationForm}">
                     <div class="mb-3">
-                        <div th:if="${param.error}" class="alert alert-error">
-                            Неправильные имя и пароль.
-                        </div>
                         <div th:if="${param.logout}" class="alert alert-success">
                             You have been logged out.
+                        </div>
+                        <div th:if="${userExists}" th:text="${userExists}" class="alert alert-error">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="exampleInputUserName" class="form-label"> Имя пользователя</label>
-                        <input type="text" th:field="*{username}"  class="form-control" id="exampleInputUserName" >
+                        <input type="text" th:field="*{username}"  class="form-control"  th:classappend="${userExists} ? 'is-invalid'" id="exampleInputUserName" >
+                        <div id="validationServerUsernameFeedback" class="invalid-feedback">
+                            Please choose a username.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="exampleInputPassword1" class="form-label">Пароль</label>
-                        <input type="password" th:field="*{password}" class="form-control" id="exampleInputPassword1">
+                        <input type="password" th:field="*{password}" class="form-control " id="exampleInputPassword1">
                     </div>
-                    <button type="submit" class="btn btn-primary">Войти</button>
+                    <div class="mb-3">
+                        <label for="exampleInputPassword2" class="form-label">Подтверждение пароля</label>
+                        <input type="password" th:field="*{passwordConfirmation}" class="form-control " th:classappend="${passIsNotConfirm} ? 'is-invalid'" id="exampleInputPassword2">
+                        <div id="validationPass" class="invalid-feedback">
+                            Password is not confirmation
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
                 </form>
             </div>
         </div>

@@ -9,6 +9,7 @@
     <div class="container form-container">
         <div class="row">
             <div class="col-md-6">
+                <h2>Войти в личный кабинет</h2>
                 <form name="f" th:action="@{/perform-login}" method="post">
                     <div class="mb-3">
                         <div th:if="${param.error}" class="alert alert-error">
@@ -28,6 +29,9 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Войти</button>
                 </form>
+                <div class="mt-2">
+                    <a href="/registration" class="btn btn-primary">Зарегистрироваться</a>
+                </div>
             </div>
         </div>
     </div>

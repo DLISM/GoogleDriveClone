@@ -1,5 +1,6 @@
 package com.example.googledriveclone.controller;
 
+import com.example.googledriveclone.services.MinioService;
 import io.minio.BucketExistsArgs;
 import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
@@ -21,26 +22,14 @@ import java.util.List;
 public class MinioController {
 
     @Autowired
-    private MinioClient minioClient;
+    private MinioService minioService;
 
     @GetMapping("/files")
     public String testMinio() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
 
-        boolean found =
-                minioClient.bucketExists(BucketExistsArgs.builder().bucket("gdrive").build());
-
-        List<Bucket> bucketList = minioClient.listBuckets();
-        for (Bucket bucket : bucketList) {
-            System.out.println(bucket.creationDate() + ", " + bucket.name());
-        }
-
-        // Lists objects information recursively.
-        Iterable<Result<Item>> results = minioClient.listObjects(
-                ListObjectsArgs.builder().bucket("gdrive").recursive(true).build());
-
-       for(var item: results){
-          System.out.println(item.get().objectName());
-       }
+        minioService.isBucketExist();
+        minioService.bucketList();
+        minioService.objectList();
         return "test";
     }
 

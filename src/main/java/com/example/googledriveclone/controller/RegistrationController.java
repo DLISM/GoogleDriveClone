@@ -1,7 +1,7 @@
 package com.example.googledriveclone.controller;
 
 import com.example.googledriveclone.dto.UserDto;
-import com.example.googledriveclone.services.Impl.UserService;
+import com.example.googledriveclone.services.UserService;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

@@ -20,3 +20,9 @@
     text-align: center;
     margin-bottom: 20px;
 }
+#from__create__folder{
+    display: none;
+}
+#from__create__folder.open{
+    display: flex;
+}

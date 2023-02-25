@@ -1,5 +1,6 @@
 package com.example.googledriveclone.controller;
 
+import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.mapper.UserMapper;
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.repository.UserRepository;
@@ -20,7 +21,9 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public String profile(Model model){
+    public String profile(@AuthenticationPrincipal User user, Model model){
+        model.addAttribute("user", user);
+
         return "profile";
     }
 

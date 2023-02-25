@@ -23,18 +23,20 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/", "/files","/registration","/login","/static/**").permitAll()
+                        .requestMatchers("/","/registration","/login","/static/**").permitAll()
                         .anyRequest().authenticated()
                   )
                 .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/perform-login")
-                .defaultSuccessUrl("/profile")
+                .defaultSuccessUrl("/files")
                 .permitAll()
                 .and()
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .permitAll();
+                .permitAll()
+                .and()
+                .rememberMe();
 
         return http.build();
     }

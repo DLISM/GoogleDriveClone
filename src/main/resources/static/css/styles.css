@@ -19,10 +19,30 @@
     width: 20%;
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
+}
+.file-item .form-check{
+    position: absolute;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    display: none;
+}
+.user-files.active .file-item .form-check {
+    border: solid 1px #ccc;
+    display: block;
+}
+.user-files.active .file-item.deleteItem .form-check{
+    display: block;
+    background: url("/static/img/icons8-done-48.png");
+    background-size: contain;
 }
 #from__create__folder{
     display: none;
 }
 #from__create__folder.open{
     display: flex;
+}
+#from__delete{
+    display: inline-block;
 }

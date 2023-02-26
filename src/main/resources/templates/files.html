@@ -5,35 +5,14 @@
 </head>
 <body>
 <div th:replace="/template-part/navigation-menu :: nav"></div>
+
 <div class="container">
 
-    <div class="files-control mt-2">
-        <div class="row">
-            <div class="mb-3">
-                <div th:if="${createSuccess}" class="alert alert-success">
-                    Папка успешно создана
-                </div>
-                <div th:if="${createFailed}" class="alert alert-danger">
-                    Папка с таким названием уже существует!
-                </div>
-            </div>
-        </div>
-
-        <button class="btn btn-outline-primary mb-3" id="create__folder">Создать папку</button>
-
-        <form class="row g-3" th:action="@{/files/create}" th:method="POST" id="from__create__folder">
-            <div class="col-auto">
-                <label for="folderName" class="visually-hidden">Имя папки</label>
-                <input type="text" name="folderName" class="form-control" id="folderName" placeholder="Имя папки">
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary mb-3">Создать</button>
-            </div>
-        </form>
-    </div>
+    <div th:replace="/template-part/files-page-top-control :: files-control"></div>
 
     <div class="user-files">
         <div th:each="item : ${files}" class="file-item">
+            <div class="form-check"></div>
             <svg th:if="${item.get().isDir()}" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
                  width="64" height="64"
                  viewBox="0,0,256,256"
@@ -49,7 +28,9 @@
             <p th:text="${item.get().objectName()}"></p>
         </div>
     </div>
+
 </div>
+
 <div th:replace="/template-part/footer :: footer"></div>
 </body>
 </html>

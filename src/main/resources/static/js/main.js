@@ -8,3 +8,39 @@ createFolder.addEventListener("click", ()=>{
         form.classList.add("open")
     }
 })
+
+const deleteForm =document.querySelector("#from__delete");
+deleteForm.addEventListener("submit", (evt)=>{
+    evt.preventDefault();
+    let deleteItems= document.querySelectorAll(".deleteItem")
+    let userFilesContainer = document.querySelector(".user-files")
+    let filesList="";
+    let deleteFormInput = document.querySelector("#from__delete_input");
+
+    if(deleteItems.length==0){
+        userFilesContainer.classList.add("active")
+    }else {
+        userFilesContainer.classList.remove("active")
+
+        deleteItems.forEach(item => {
+            filesList += item.querySelector("p").textContent + ", "
+            item.classList.remove("deleteItem")
+        })
+
+        deleteFormInput.value = filesList
+        deleteForm.submit()
+    }
+
+})
+
+
+const items = document.querySelectorAll(".file-item");
+items.forEach(item=>{
+    item.addEventListener("click",()=>{
+        if(item.classList.contains("deleteItem")){
+            item.classList.remove("deleteItem")
+        }else {
+            item.classList.add("deleteItem")
+        }
+    })
+})

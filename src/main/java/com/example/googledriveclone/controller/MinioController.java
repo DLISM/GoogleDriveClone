@@ -1,6 +1,5 @@
 package com.example.googledriveclone.controller;
 
-import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
 import io.minio.errors.*;
@@ -16,6 +15,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/files")
@@ -29,10 +30,10 @@ public class MinioController {
     public String getUserFiles(@AuthenticationPrincipal User user, Model model,
                                @RequestParam(value = "createSuccess", required = false) boolean createSuccess,
                                @RequestParam(value = "createFailed", required = false) boolean createFailed
-                               ) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    ) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
 
         model.addAttribute("user", user);
-        model.addAttribute("files", minioService.objectList(user.getUsername()));
+        model.addAttribute("files", minioService.folderList(user.getUsername()));
         model.addAttribute("createSuccess", createSuccess);
         model.addAttribute("createFailed", createFailed);
 
@@ -40,16 +41,38 @@ public class MinioController {
     }
 
     @PostMapping("/create")
-    public RedirectView createFolder(@AuthenticationPrincipal User user, @ModelAttribute("folderName") String folderName, RedirectAttributes redirectAttributes) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public RedirectView createFolder(@AuthenticationPrincipal User user,
+                                     @ModelAttribute("folderName") String folderName,
+                                     RedirectAttributes redirectAttributes
+    ) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         var newFolder = user.getUsername()+"/"+folderName;
         var creatFolder = minioService.createFolder(newFolder);
-        log.info(creatFolder);
-        if(creatFolder)
-            redirectAttributes.addAttribute("createSuccess", true);
-        else
-            redirectAttributes.addAttribute("createFailed", true);
 
-        log.info(newFolder);
+        if(creatFolder) {
+            redirectAttributes.addAttribute("createSuccess", true);
+            log.info("folder create success");
+        }
+        else {
+            redirectAttributes.addAttribute("createFailed", true);
+            log.info("folder create failed");
+        }
+
         return new RedirectView("/files");
+    }
+
+    @PostMapping("/delete")
+    public String delete(@RequestParam("files") String pathList) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        var filesPathArray = pathList.split(",");
+
+        Arrays.stream(filesPathArray).forEach(i->{
+            try {
+                if(!i.equals(" "))
+                    minioService.deleteFolder(i.trim());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return "redirect:/files";
     }
 }

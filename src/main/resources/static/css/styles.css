@@ -46,3 +46,7 @@
 #from__delete{
     display: inline-block;
 }
+.input-group{
+    width: unset;
+    margin-right: 30px;
+}

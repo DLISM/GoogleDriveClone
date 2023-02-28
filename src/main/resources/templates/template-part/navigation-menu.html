@@ -16,6 +16,14 @@
         </ul>
       </div>
 
+      <form th:action="@{/files/search}" th:method="GET" id="from__search" th:if="${user}">
+        <div class="input-group" >
+          <input type="text" name="query" class="form-control" placeholder="Поиск файлов" aria-label="Recipient's username" aria-describedby="button-addon2">
+          <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Найти</button>
+        </div>
+      </form>
+
+
       <div class="d-flex" th:if="${user}">
         <a href="/logout" class="nav-link">Выйти</a>
       </div>

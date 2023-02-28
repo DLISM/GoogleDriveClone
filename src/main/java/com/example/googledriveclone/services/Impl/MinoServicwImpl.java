@@ -25,13 +25,18 @@ public class MinoServicwImpl implements MinioService {
 
     @Override
     public boolean isBucketExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        return minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+        return minioClient
+                .bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
     }
 
     @Override
     public Iterable<Result<Item>> folderList(String userFolder) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-            Iterable<Result<Item>> results = minioClient.listObjects(
-                ListObjectsArgs.builder().bucket(bucket).prefix(userFolder+"/").recursive(false).build());
+            Iterable<Result<Item>> results = minioClient
+                    .listObjects(
+                        ListObjectsArgs.builder()
+                                .bucket(bucket)
+                                .prefix(userFolder+"/")
+                                .recursive(false).build());
 
         return results;
     }
@@ -60,17 +65,41 @@ public class MinoServicwImpl implements MinioService {
 
     @Override
     public void deleteFolder(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-       var folderList = minioClient.listObjects(
-               ListObjectsArgs.builder().bucket(bucket).prefix(folderName).recursive(true).build());
+       var folderList = minioClient
+               .listObjects(
+                    ListObjectsArgs
+                            .builder()
+                            .bucket(bucket)
+                            .prefix(folderName)
+                            .recursive(true)
+                            .build());
 
        folderList.forEach(itemResult -> {
            try {
                minioClient.removeObject(
-                       RemoveObjectArgs.builder().bucket(bucket).object(itemResult.get().objectName()).build());
+                       RemoveObjectArgs
+                               .builder()
+                               .bucket(bucket)
+                               .object(itemResult.get().objectName())
+                               .build());
+
            } catch (Exception e) {
                throw new RuntimeException(e);
            }
        });
 
+    }
+
+    @Override
+    public Iterable<Result<Item>> search(String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+        Iterable<Result<Item>> results = minioClient
+                .listObjects(
+                    ListObjectsArgs
+                            .builder()
+                            .bucket(bucket)
+                            .prefix("test.txt")
+                            .recursive(true)
+                            .build());
+        return results;
     }
 }

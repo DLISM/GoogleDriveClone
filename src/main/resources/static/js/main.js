@@ -37,10 +37,12 @@ deleteForm.addEventListener("submit", (evt)=>{
 const items = document.querySelectorAll(".file-item");
 items.forEach(item=>{
     item.addEventListener("click",()=>{
-        if(item.classList.contains("deleteItem")){
-            item.classList.remove("deleteItem")
-        }else {
-            item.classList.add("deleteItem")
+        if(document.querySelector(".user-files").classList.contains("active")) {
+            if (item.classList.contains("deleteItem")) {
+                item.classList.remove("deleteItem")
+            } else {
+                item.classList.add("deleteItem")
+            }
         }
     })
 })

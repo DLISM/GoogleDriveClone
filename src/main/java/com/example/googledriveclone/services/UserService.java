@@ -1,4 +1,4 @@
-package com.example.googledriveclone.services.Impl;
+package com.example.googledriveclone.services;
 
 import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.mapper.UserMapper;

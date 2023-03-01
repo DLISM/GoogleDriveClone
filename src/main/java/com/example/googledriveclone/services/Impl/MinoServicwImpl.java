@@ -1,5 +1,6 @@
 package com.example.googledriveclone.services.Impl;
 
+import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
 import io.minio.*;
 import io.minio.errors.*;
@@ -13,6 +14,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Log4j
@@ -35,7 +40,7 @@ public class MinoServicwImpl implements MinioService {
                     .listObjects(
                         ListObjectsArgs.builder()
                                 .bucket(bucket)
-                                .prefix(userFolder+"/")
+                                .prefix(userFolder)
                                 .recursive(false).build());
 
         return results;
@@ -51,7 +56,7 @@ public class MinoServicwImpl implements MinioService {
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucket)
-                        .object(folderName+"/test.txt")
+                        .object(folderName+"/")
                         .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                         .build());
 
@@ -65,14 +70,8 @@ public class MinoServicwImpl implements MinioService {
 
     @Override
     public void deleteFolder(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-       var folderList = minioClient
-               .listObjects(
-                    ListObjectsArgs
-                            .builder()
-                            .bucket(bucket)
-                            .prefix(folderName)
-                            .recursive(true)
-                            .build());
+
+        var folderList = objectListRecursive(folderName);
 
        folderList.forEach(itemResult -> {
            try {
@@ -91,13 +90,33 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public Iterable<Result<Item>> search(String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public Map<String, String> search(String userDirectory, String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+
+        var foundFilesMap = new HashMap<String, String>();
+        var results = objectListRecursive(userDirectory);
+
+        for (Result<Item> itemResult : results) {
+            var objectName = itemResult.get().objectName();
+
+            if (objectName.indexOf(query)!=-1){
+                var path = objectName.substring(0, objectName.indexOf(query)+query.length());
+
+                if(!foundFilesMap.containsKey(path))
+                    foundFilesMap.put(path, objectName);
+
+            }
+        }
+
+        return foundFilesMap;
+    }
+
+    private Iterable<Result<Item>> objectListRecursive(String userDirectory) {
         Iterable<Result<Item>> results = minioClient
                 .listObjects(
                     ListObjectsArgs
                             .builder()
                             .bucket(bucket)
-                            .prefix("test.txt")
+                            .prefix(userDirectory)
                             .recursive(true)
                             .build());
         return results;

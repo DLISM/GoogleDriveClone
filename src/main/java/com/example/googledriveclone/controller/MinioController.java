@@ -25,10 +25,16 @@ public class MinioController {
     public String getUserFiles(@AuthenticationPrincipal User user,
                                Model model,
                                @RequestParam(value = "createSuccess", required = false) boolean createSuccess,
-                               @RequestParam(value = "createFailed", required = false) boolean createFailed) throws Exception{
+                               @RequestParam(value = "createFailed", required = false) boolean createFailed,
+                               @RequestParam(value = "", required = false) String subdirectory) throws Exception{
 
+        var directory =user.getUsername()+"/";
+
+        if(subdirectory!=null)
+            directory=subdirectory;
+
+        model.addAttribute("files", minioService.folderList(directory));
         model.addAttribute("user", user);
-        model.addAttribute("files", minioService.folderList(user.getUsername()));
         model.addAttribute("createSuccess", createSuccess);
         model.addAttribute("createFailed", createFailed);
 
@@ -75,7 +81,8 @@ public class MinioController {
     public String search(@AuthenticationPrincipal User user, Model model, @RequestParam("query") String query) throws Exception {
 
         model.addAttribute("user", user);
-        model.addAttribute("files", minioService.search("Abu/old files/"));
+        model.addAttribute("files", minioService.search(user.getUsername(), query));
+        model.addAttribute("query", query);
 
         log.info(query);
 

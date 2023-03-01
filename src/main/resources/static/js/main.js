@@ -1,5 +1,4 @@
 const createFolder = document.querySelector("#create__folder");
-
 createFolder.addEventListener("click", ()=>{
     let form = document.querySelector("#from__create__folder");
     if(form.classList.contains("open")){
@@ -23,7 +22,7 @@ deleteForm.addEventListener("submit", (evt)=>{
         userFilesContainer.classList.remove("active")
 
         deleteItems.forEach(item => {
-            filesList += item.querySelector("p").textContent + ", "
+            filesList += item.dataset.path + ", "
             item.classList.remove("deleteItem")
         })
 
@@ -45,4 +44,11 @@ items.forEach(item=>{
             }
         }
     })
+})
+
+const directory = document.querySelectorAll(".dir");
+directory.forEach(dir=>{
+  dir.addEventListener("dblclick", (evt)=>{
+      window.location=window.location.pathname+"?subdirectory="+dir.dataset.path
+  })
 })

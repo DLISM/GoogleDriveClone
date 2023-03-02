@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -84,8 +85,14 @@ public class MinioController {
         model.addAttribute("files", minioService.search(user.getUsername(), query));
         model.addAttribute("query", query);
 
-        log.info(query);
-
         return "search";
+    }
+
+    @PostMapping("/upload")
+    public String upload(@RequestParam("file") MultipartFile[] file){
+
+        minioService.uploadFile(file);
+
+        return "redirect:/files";
     }
 }

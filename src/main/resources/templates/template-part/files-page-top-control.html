@@ -25,5 +25,13 @@
     </div>
   </form>
 
+  <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="formFileMultiple" class="form-label">Multiple files input example</label>
+      <input class="form-control" type="file" name="file" id="formFileMultiple" multiple>
+    </div>
+    <button type="submit" class="btn btn-primary mb-3">Загрузить</button>
+  </form>
+
 
 </div>

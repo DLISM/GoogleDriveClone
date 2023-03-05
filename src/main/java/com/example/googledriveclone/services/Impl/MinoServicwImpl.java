@@ -127,7 +127,7 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public boolean uploadFile(MultipartFile[] files) {
+    public boolean uploadFile(String userDirectory, MultipartFile[] files) {
         try {
             for (MultipartFile file : files ) {
                 InputStream in = new ByteArrayInputStream(file.getBytes());
@@ -136,7 +136,7 @@ public class MinoServicwImpl implements MinioService {
                         PutObjectArgs
                                 .builder()
                                 .bucket(bucket)
-                                .object(fileName)
+                                .object(userDirectory+"/"+fileName)
                                 .stream(
                                         in,  file.getSize(), -1)
                                 .contentType(file.getContentType())

@@ -50,3 +50,6 @@
     width: unset;
     margin-right: 30px;
 }
+#form__upload__files, #form__upload__directory{
+    display: none;
+}

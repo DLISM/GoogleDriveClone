@@ -89,10 +89,19 @@ public class MinioController {
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestParam("file") MultipartFile[] file){
+    public String upload(@AuthenticationPrincipal User user,
+                         @RequestParam("file") MultipartFile[] file,
+                         @RequestParam(value = "subdirectory", required = false) String subdirectory,
+                         RedirectAttributes redirectAttributes){
 
-        minioService.uploadFile(file);
+        String saveDirectory = user.getUsername();
 
+        if(subdirectory!=null && !subdirectory.isEmpty()) {
+            saveDirectory = subdirectory;
+            redirectAttributes.addAttribute("subdirectory", subdirectory);
+
+        }
+        minioService.uploadFile(saveDirectory, file);
         return "redirect:/files";
     }
 }

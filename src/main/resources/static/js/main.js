@@ -52,3 +52,39 @@ directory.forEach(dir=>{
       window.location=window.location.pathname+"?subdirectory="+dir.dataset.path
   })
 })
+
+const uploadFilesBtn = document.querySelector("#uploadFilesBtn");
+uploadFilesBtn.addEventListener("click",()=>{
+    let form__upload__files = document.querySelector("#form__upload__files");
+
+    if(form__upload__files.querySelector("input[type='file']").value!==""){
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+
+        form__upload__files.querySelector("input[name='subdirectory']").value=params.subdirectory
+        form__upload__files.submit()
+
+    }else {
+        document.querySelector("#form__upload__files").style.display="block"
+    }
+
+})
+
+const uploadFolderBtn = document.querySelector("#uploadFolderBtn");
+uploadFolderBtn.addEventListener("click",()=>{
+    let form__upload__directory = document.querySelector("#form__upload__directory");
+
+    if(form__upload__directory.querySelector("input[type='file']").value!==""){
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+
+        form__upload__directory.querySelector("input[name='subdirectory']").value=params.subdirectory
+        form__upload__directory.submit()
+
+    }else {
+        document.querySelector("#form__upload__directory").style.display="block"
+    }
+
+})

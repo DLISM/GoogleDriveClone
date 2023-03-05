@@ -11,10 +11,14 @@
   </div>
 
   <button class="btn btn-outline-primary mb-3" id="create__folder">Создать папку</button>
+  <button type="click" class="btn btn-outline-primary mb-3" id="uploadFilesBtn">Загрузить файлы</button>
+  <button type="click" class="btn btn-outline-primary mb-3" id="uploadFolderBtn">Загрузить папку</button>
+
   <form th:action="@{/files/delete}" th:method="POST" id="from__delete">
     <input type="hidden" value="" id="from__delete_input" name="files">
     <button type="submit" class="btn btn-outline-primary mb-3">Удалить</button>
   </form>
+
   <form class="row g-3" th:action="@{/files/create}" th:method="POST" id="from__create__folder">
     <div class="col-auto">
       <label for="folderName" class="visually-hidden">Имя папки</label>
@@ -25,13 +29,18 @@
     </div>
   </form>
 
-  <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data">
+  <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data" id="form__upload__files">
     <div class="mb-3">
-      <label for="formFileMultiple" class="form-label">Multiple files input example</label>
-      <input class="form-control" type="file" name="file" id="formFileMultiple" multiple>
+      <input class="form-control" type="file" name="file" multiple>
+      <input type="hidden" name="subdirectory" value="">
     </div>
-    <button type="submit" class="btn btn-primary mb-3">Загрузить</button>
   </form>
 
+  <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data" id="form__upload__directory">
+    <div class="mb-3">
+      <input class="form-control" type="file" name="file" webkitdirectory>
+      <input type="hidden" name="subdirectory" value="">
+    </div>
+  </form>
 
 </div>

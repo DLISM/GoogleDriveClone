@@ -2,6 +2,7 @@ package com.example.googledriveclone.controller;
 
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
+import io.minio.errors.*;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 @Controller
@@ -64,16 +68,18 @@ public class MinioController {
 
     @PostMapping("/delete")
     public String delete(@RequestParam("files") String pathList){
-        var filesPathArray = pathList.split(",");
+        var pathArray = pathList.split(",");
 
-        Arrays.stream(filesPathArray).forEach(i->{
-            try {
-                if(!i.equals(" "))
-                    minioService.deleteFolder(i.trim());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        String[] deleteFilesPath = Arrays.stream(pathArray)
+                .filter(s -> !s.equals(" "))
+                .map(s -> s.trim())
+                .toArray(String[]::new);
+
+        try {
+            minioService.deleteFolder(deleteFilesPath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         return "redirect:/files";
     }
@@ -97,10 +103,12 @@ public class MinioController {
         String saveDirectory = user.getUsername();
 
         if(subdirectory!=null && !subdirectory.isEmpty()) {
+
             saveDirectory = subdirectory;
             redirectAttributes.addAttribute("subdirectory", subdirectory);
 
         }
+
         minioService.uploadFile(saveDirectory, file);
         return "redirect:/files";
     }

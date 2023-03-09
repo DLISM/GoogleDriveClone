@@ -43,6 +43,7 @@ public class MinioController {
         model.addAttribute("createSuccess", createSuccess);
         model.addAttribute("createFailed", createFailed);
 
+        minioService.renameFile("dsds","");
         return "files";
     }
 

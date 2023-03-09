@@ -29,4 +29,6 @@ public interface MinioService {
     void deleteFolder(String[] folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
 
     boolean uploadFile(String userDirectory, MultipartFile[] file);
+
+    void renameFile(String filePath, String fileNewName);
 }

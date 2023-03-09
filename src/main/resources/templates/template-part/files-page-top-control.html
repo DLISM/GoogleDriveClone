@@ -30,6 +30,7 @@
   </form>
 
   <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data" id="form__upload__files">
+    <h5>Загрузить файл</h5>
     <div class="mb-3">
       <input class="form-control" type="file" name="file" multiple>
       <input type="hidden" name="subdirectory" value="">
@@ -37,6 +38,7 @@
   </form>
 
   <form th:action="@{/files/upload}" th:method="POST" enctype="multipart/form-data" id="form__upload__directory">
+    <h5>Загрузить папку</h5>
     <div class="mb-3">
       <input class="form-control" type="file" name="file" webkitdirectory>
       <input type="hidden" name="subdirectory" value="">

@@ -78,6 +78,7 @@ public class MinoServicwImpl implements MinioService {
         Iterable<Result<DeleteError>> results =minioClient.removeObjects(
                 RemoveObjectsArgs.builder().bucket(bucket).objects(objects).build());
 
+        //TODO объекты не удаляются без этого цикла?
         for (Result<DeleteError> result : results) {
             DeleteError error = result.get();
             log.warn("Error in deleting object " + error.objectName() + "; " + error.message());
@@ -111,8 +112,10 @@ public class MinoServicwImpl implements MinioService {
     public boolean uploadFile(String userDirectory, MultipartFile[] files) {
         try {
             for (MultipartFile file : files ) {
+
                 InputStream in = new ByteArrayInputStream(file.getBytes());
                 String fileName = file.getOriginalFilename();
+
                 minioClient.putObject(
                         PutObjectArgs
                                 .builder()
@@ -123,7 +126,7 @@ public class MinoServicwImpl implements MinioService {
                                 .contentType(file.getContentType())
                                 .build()
                 );
-                log.info(file.getOriginalFilename());
+
             }
 
             return true;
@@ -133,6 +136,24 @@ public class MinoServicwImpl implements MinioService {
         }
 
         return false;
+    }
+
+    @Override
+    public void renameFile(String filePath, String fileNewName) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(bucket)
+                            .object("Abu/newfi")
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(bucket)
+                                            .object("Abu/favicon.ico")
+                                            .build())
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Iterable<Result<Item>> objectListRecursive(String userDirectory) {
@@ -148,11 +169,17 @@ public class MinoServicwImpl implements MinioService {
         return results;
     }
 
+    /**
+     * Рекрсивним методом обходить все папки и сосбавляет список файлов
+     * @param deleteFilesPath массив содержающий путь к файлам и папкам для удаления
+     * @return List<DeleteObject>
+     */
     @NonNull
     private List<DeleteObject> getDeleteObjects(String[] deleteFilesPath) {
         List<DeleteObject> objects = new LinkedList<>();
 
         for (String path: deleteFilesPath) {
+
             var results = objectListRecursive(path);
             for (Result<Item> itemResult : results) {
                 try {
@@ -165,4 +192,6 @@ public class MinoServicwImpl implements MinioService {
         }
         return objects;
     }
+
+
 }

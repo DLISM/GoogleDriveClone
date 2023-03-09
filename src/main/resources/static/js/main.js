@@ -88,3 +88,17 @@ uploadFolderBtn.addEventListener("click",()=>{
     }
 
 })
+
+const editBtn = document.querySelectorAll(".edit-btn");
+
+editBtn.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+        let fileName = btn.parentElement.querySelector('p').textContent
+
+        document.querySelector('#from__rename_path_input').value=fileName;
+        document.querySelector('#from__rename_input').value=fileName;
+
+        document.querySelector("#popUp").style.display="flex"
+
+    })
+})

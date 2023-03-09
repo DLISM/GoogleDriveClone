@@ -29,9 +29,17 @@
             </svg>
 
             <p th:text="${item.get().objectName()}"></p>
+            <img src="/static/img/icons8-pen-squared-25.png" class="edit-btn">
         </div>
     </div>
 
+    <div id="popUp">
+        <form th:action="@{/files/rename}" th:method="POST" id="from__rename">
+            <input type="hidden" name="filePath" value="" id="from__rename_path_input">
+            <input type="text" value="" id="from__rename_input" name="fileName">
+            <button type="submit" class="btn btn-outline-primary mb-3">Изменить</button>
+        </form>
+    </div>
 </div>
 
 <div th:replace="/template-part/footer :: footer"></div>

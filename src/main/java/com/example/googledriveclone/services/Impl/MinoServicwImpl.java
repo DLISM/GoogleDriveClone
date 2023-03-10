@@ -144,13 +144,15 @@ public class MinoServicwImpl implements MinioService {
             minioClient.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(bucket)
-                            .object("Abu/newfi")
+                            .object(fileNewName)
                             .source(
                                     CopySource.builder()
                                             .bucket(bucket)
-                                            .object("Abu/favicon.ico")
+                                            .object(filePath)
                                             .build())
                             .build());
+
+            deleteFolder(new String[]{filePath});
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

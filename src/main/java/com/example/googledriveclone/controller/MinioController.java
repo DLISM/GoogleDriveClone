@@ -43,7 +43,6 @@ public class MinioController {
         model.addAttribute("createSuccess", createSuccess);
         model.addAttribute("createFailed", createFailed);
 
-        minioService.renameFile("dsds","");
         return "files";
     }
 
@@ -104,13 +103,18 @@ public class MinioController {
         String saveDirectory = user.getUsername();
 
         if(subdirectory!=null && !subdirectory.isEmpty()) {
-
             saveDirectory = subdirectory;
             redirectAttributes.addAttribute("subdirectory", subdirectory);
-
         }
 
         minioService.uploadFile(saveDirectory, file);
+        return "redirect:/files";
+    }
+
+    @PostMapping("/rename")
+    public String rename(@RequestParam("filePath") String filePath, @RequestParam("fileName") String fileName){
+
+        minioService.renameFile(filePath, fileName);
         return "redirect:/files";
     }
 }

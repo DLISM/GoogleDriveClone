@@ -34,7 +34,7 @@ public class UserService implements UserDetailsService {
             return false;
         }
 
-        var user= userMapper.UserDtoToUser(userDto);
+        var user= userMapper.toEntity(userDto);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRoles(Collections.singleton(Role.USER));
         userRepository.save(user);

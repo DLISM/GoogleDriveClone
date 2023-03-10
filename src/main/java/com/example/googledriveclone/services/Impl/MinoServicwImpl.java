@@ -1,23 +1,24 @@
 package com.example.googledriveclone.services.Impl;
 
-import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Log4j
@@ -36,8 +37,9 @@ public class MinoServicwImpl implements MinioService {
 
     @Override
     public Iterable<Result<Item>> folderList(String userFolder) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-            Iterable<Result<Item>> results = minioClient
-                    .listObjects(
+        //TODO возвращать только имю файлов и папок
+        Iterable<Result<Item>> results = minioClient
+                .listObjects(
                         ListObjectsArgs.builder()
                                 .bucket(bucket)
                                 .prefix(userFolder)
@@ -69,29 +71,25 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public void deleteFolder(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public void deleteFolder(String[] deleteFilesPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
 
-        var folderList = objectListRecursive(folderName);
+        List<DeleteObject> objects = getDeleteObjects(deleteFilesPath);
 
-       folderList.forEach(itemResult -> {
-           try {
-               minioClient.removeObject(
-                       RemoveObjectArgs
-                               .builder()
-                               .bucket(bucket)
-                               .object(itemResult.get().objectName())
-                               .build());
+        Iterable<Result<DeleteError>> results =minioClient.removeObjects(
+                RemoveObjectsArgs.builder().bucket(bucket).objects(objects).build());
 
-           } catch (Exception e) {
-               throw new RuntimeException(e);
-           }
-       });
-
+        //TODO объекты не удаляются без этого цикла?
+        for (Result<DeleteError> result : results) {
+            DeleteError error = result.get();
+            log.warn("Error in deleting object " + error.objectName() + "; " + error.message());
+        }
     }
+
+
 
     @Override
     public Map<String, String> search(String userDirectory, String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-
+        //TODO  проверка на папку
         var foundFilesMap = new HashMap<String, String>();
         var results = objectListRecursive(userDirectory);
 
@@ -110,15 +108,92 @@ public class MinoServicwImpl implements MinioService {
         return foundFilesMap;
     }
 
+    @Override
+    public boolean uploadFile(String userDirectory, MultipartFile[] files) {
+        try {
+            for (MultipartFile file : files ) {
+
+                InputStream in = new ByteArrayInputStream(file.getBytes());
+                String fileName = file.getOriginalFilename();
+
+                minioClient.putObject(
+                        PutObjectArgs
+                                .builder()
+                                .bucket(bucket)
+                                .object(userDirectory+"/"+fileName)
+                                .stream(
+                                        in,  file.getSize(), -1)
+                                .contentType(file.getContentType())
+                                .build()
+                );
+
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    @Override
+    public void renameFile(String filePath, String fileNewName) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(fileNewName)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(bucket)
+                                            .object(filePath)
+                                            .build())
+                            .build());
+
+            deleteFolder(new String[]{filePath});
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Iterable<Result<Item>> objectListRecursive(String userDirectory) {
         Iterable<Result<Item>> results = minioClient
                 .listObjects(
-                    ListObjectsArgs
-                            .builder()
-                            .bucket(bucket)
-                            .prefix(userDirectory)
-                            .recursive(true)
-                            .build());
+                        ListObjectsArgs
+                                .builder()
+                                .bucket(bucket)
+                                .prefix(userDirectory)
+                                .recursive(true)
+                                .build());
+
         return results;
     }
+
+    /**
+     * Рекрсивним методом обходить все папки и сосбавляет список файлов
+     * @param deleteFilesPath массив содержающий путь к файлам и папкам для удаления
+     * @return List<DeleteObject>
+     */
+    @NonNull
+    private List<DeleteObject> getDeleteObjects(String[] deleteFilesPath) {
+        List<DeleteObject> objects = new LinkedList<>();
+
+        for (String path: deleteFilesPath) {
+
+            var results = objectListRecursive(path);
+            for (Result<Item> itemResult : results) {
+                try {
+                    objects.add(new DeleteObject(itemResult.get().objectName()));
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return objects;
+    }
+
+
 }

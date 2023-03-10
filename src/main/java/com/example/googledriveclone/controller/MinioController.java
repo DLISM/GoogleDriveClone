@@ -49,10 +49,17 @@ public class MinioController {
     @PostMapping("/create")
     public RedirectView createFolder(@AuthenticationPrincipal User user,
                                      @ModelAttribute("folderName") String folderName,
+                                     @RequestParam(value = "subdirectory", required = false) String subdirectory,
                                      RedirectAttributes redirectAttributes) throws Exception {
 
-        var newFolder = user.getUsername()+"/"+folderName;
-        var creatFolder = minioService.createFolder(newFolder);
+        String newFolder = user.getUsername()+"/"+folderName;
+
+        if(subdirectory!=null && !subdirectory.isEmpty()) {
+            newFolder = subdirectory+folderName;
+            redirectAttributes.addAttribute("subdirectory", subdirectory);
+        }
+
+        boolean creatFolder = minioService.createFolder(newFolder);
 
         if(creatFolder) {
             redirectAttributes.addAttribute("createSuccess", true);
@@ -112,9 +119,19 @@ public class MinioController {
     }
 
     @PostMapping("/rename")
-    public String rename(@RequestParam("filePath") String filePath, @RequestParam("fileName") String fileName){
+    public String rename(
+            @RequestParam("filePath") String filePath,
+            @RequestParam("fileName") String fileName,
+            @RequestParam(value = "subdirectory", required = false) String subdirectory,
+            RedirectAttributes redirectAttributes
+            ){
+
+        if(subdirectory!=null && !subdirectory.isEmpty()) {
+            redirectAttributes.addAttribute("subdirectory", subdirectory);
+        }
 
         minioService.renameFile(filePath, fileName);
+
         return "redirect:/files";
     }
 }

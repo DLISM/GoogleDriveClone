@@ -6,6 +6,11 @@ createFolder.addEventListener("click", ()=>{
     }else {
         form.classList.add("open")
     }
+
+    const params = getSubdirectory();
+
+    form.querySelector("input[name='subdirectory']").value=params.subdirectory
+    console.log(params.subdirectory)
 })
 
 const deleteForm =document.querySelector("#from__delete");
@@ -72,13 +77,20 @@ uploadFilesBtn.addEventListener("click",()=>{
 })
 
 const uploadFolderBtn = document.querySelector("#uploadFolderBtn");
+
+function getSubdirectory() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+    return params;
+}
+
 uploadFolderBtn.addEventListener("click",()=>{
     let form__upload__directory = document.querySelector("#form__upload__directory");
 
     if(form__upload__directory.querySelector("input[type='file']").value!==""){
-        const params = new Proxy(new URLSearchParams(window.location.search), {
-            get: (searchParams, prop) => searchParams.get(prop),
-        });
+
+        const params = getSubdirectory();
 
         form__upload__directory.querySelector("input[name='subdirectory']").value=params.subdirectory
         form__upload__directory.submit()
@@ -95,8 +107,11 @@ editBtn.forEach(btn=>{
     btn.addEventListener("click",()=>{
         let fileName = btn.parentElement.querySelector('p').textContent
 
+        const params = getSubdirectory();
+
         document.querySelector('#from__rename_path_input').value=fileName;
         document.querySelector('#from__rename_input').value=fileName;
+        document.querySelector('#from__rename_subdirectory').value=params.subdirectory;
 
         document.querySelector("#popUp").style.display="flex"
 

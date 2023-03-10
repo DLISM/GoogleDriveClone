@@ -22,6 +22,7 @@
   <form class="row g-3" th:action="@{/files/create}" th:method="POST" id="from__create__folder">
     <div class="col-auto">
       <label for="folderName" class="visually-hidden">Имя папки</label>
+      <input type="hidden" name="subdirectory" value="">
       <input type="text" name="folderName" class="form-control" id="folderName" placeholder="Имя папки">
     </div>
     <div class="col-auto">

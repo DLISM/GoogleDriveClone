@@ -36,6 +36,7 @@
     <div id="popUp">
         <form th:action="@{/files/rename}" th:method="POST" id="from__rename">
             <input type="hidden" name="filePath" value="" id="from__rename_path_input">
+            <input type="hidden" name="subdirectory" value="" id="from__rename_subdirectory">
             <input type="text" name="fileName" value="" id="from__rename_input" >
             <button type="submit" class="btn btn-outline-primary mb-3">Изменить</button>
         </form>

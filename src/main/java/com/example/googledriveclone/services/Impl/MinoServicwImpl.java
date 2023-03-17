@@ -1,6 +1,8 @@
 package com.example.googledriveclone.services.Impl;
 
 import com.example.googledriveclone.services.MinioService;
+import com.example.googledriveclone.utils.MapperMinio;
+import com.example.googledriveclone.utils.MinioObject;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.DeleteError;
@@ -36,8 +38,7 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public Iterable<Result<Item>> folderList(String userFolder) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        //TODO возвращать только имю файлов и папок
+    public List<MinioObject> folderList(String userFolder){
         Iterable<Result<Item>> results = minioClient
                 .listObjects(
                         ListObjectsArgs.builder()
@@ -45,7 +46,7 @@ public class MinoServicwImpl implements MinioService {
                                 .prefix(userFolder)
                                 .recursive(false).build());
 
-        return results;
+        return MapperMinio.convert(results);
     }
 
     @Override

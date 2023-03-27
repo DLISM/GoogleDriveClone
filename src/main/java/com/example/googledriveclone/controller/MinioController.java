@@ -2,8 +2,8 @@ package com.example.googledriveclone.controller;
 
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
-import io.minio.errors.*;
 import lombok.extern.log4j.Log4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -13,9 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 @Controller
@@ -27,16 +24,13 @@ public class MinioController {
     private MinioService minioService;
 
     @GetMapping("")
-    public String getUserFiles(@AuthenticationPrincipal User user,
-                               Model model,
-                               @RequestParam(value = "createSuccess", required = false) boolean createSuccess,
-                               @RequestParam(value = "createFailed", required = false) boolean createFailed,
-                               @RequestParam(value = "", required = false) String subdirectory) throws Exception{
+    public String getUserFilesView(@AuthenticationPrincipal User user,
+                                   Model model,
+                                   @RequestParam(value = "createSuccess", required = false) boolean createSuccess,
+                                   @RequestParam(value = "createFailed", required = false) boolean createFailed,
+                                   @RequestParam(value = "", required = false) String subdirectory) throws Exception{
 
-        var directory =user.getUsername()+"/";
-
-        if(subdirectory!=null)
-            directory=subdirectory;
+        String directory = getDirectory(user, subdirectory);
 
         model.addAttribute("files", minioService.folderList(directory));
         model.addAttribute("user", user);
@@ -47,27 +41,27 @@ public class MinioController {
     }
 
     @PostMapping("/create")
-    public RedirectView createFolder(@AuthenticationPrincipal User user,
-                                     @ModelAttribute("folderName") String folderName,
-                                     @RequestParam(value = "subdirectory", required = false) String subdirectory,
-                                     RedirectAttributes redirectAttributes) throws Exception {
+    public RedirectView createFolderAction(@AuthenticationPrincipal User user,
+                                           @ModelAttribute("folderName") String folderName,
+                                           @RequestParam(value = "subdirectory", required = false) String subdirectory,
+                                           RedirectAttributes redirectAttributes) throws Exception {
 
-        String newFolder = user.getUsername()+"/"+folderName;
+        String newFolder = StringUtils.join(user.getUsername(), "/");
 
-        if(subdirectory!=null && !subdirectory.isEmpty()) {
-            newFolder = subdirectory+folderName;
+        if(StringUtils.isNotBlank(subdirectory)) {
+            newFolder=StringUtils.join(subdirectory, folderName);
             redirectAttributes.addAttribute("subdirectory", subdirectory);
+        }else {
+            newFolder += folderName;
         }
 
         boolean creatFolder = minioService.createFolder(newFolder);
 
         if(creatFolder) {
             redirectAttributes.addAttribute("createSuccess", true);
-            log.info("folder create success");
         }
         else {
             redirectAttributes.addAttribute("createFailed", true);
-            log.info("folder create failed");
         }
 
         return new RedirectView("/files");
@@ -79,19 +73,20 @@ public class MinioController {
             @RequestParam(value = "subdirectory", required = false) String subdirectory,
             RedirectAttributes redirectAttributes){
 
-        if(subdirectory!=null && !subdirectory.isEmpty()) {
+        if(StringUtils.isNotBlank(subdirectory)) {
             redirectAttributes.addAttribute("subdirectory", subdirectory);
         }
 
         String[] pathArray = pathList.split(",");
 
         String[] deleteFilesPath = Arrays.stream(pathArray)
-                .filter(s -> !s.equals(" "))
-                .map(s -> s.trim())
+                .map(StringUtils::trim)
+                .filter(StringUtils::isNotBlank)
                 .toArray(String[]::new);
 
         try {
             minioService.deleteFolder(deleteFilesPath);
+            redirectAttributes.addAttribute("deleteSuccess", true);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +112,7 @@ public class MinioController {
 
         String saveDirectory = user.getUsername();
 
-        if(subdirectory!=null && !subdirectory.isEmpty()) {
+        if(StringUtils.isNotBlank(subdirectory)) {
             saveDirectory = subdirectory;
             redirectAttributes.addAttribute("subdirectory", subdirectory);
         }
@@ -134,12 +129,20 @@ public class MinioController {
             RedirectAttributes redirectAttributes
             ){
 
-        if(subdirectory!=null && !subdirectory.isEmpty()) {
+        if(StringUtils.isNotBlank(subdirectory)) {
             redirectAttributes.addAttribute("subdirectory", subdirectory);
         }
 
         minioService.renameFile(filePath, fileName);
 
         return "redirect:/files";
+    }
+
+    private String getDirectory(User user, String subdirectory) {
+        String directory = user.getUsername() + "/";
+        if (StringUtils.isNotBlank(subdirectory)) {
+            directory = subdirectory;
+        }
+        return directory;
     }
 }

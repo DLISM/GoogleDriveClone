@@ -74,8 +74,16 @@ public class MinioController {
     }
 
     @PostMapping("/delete")
-    public String delete(@RequestParam("files") String pathList){
-        var pathArray = pathList.split(",");
+    public String delete(
+            @RequestParam("files") String pathList,
+            @RequestParam(value = "subdirectory", required = false) String subdirectory,
+            RedirectAttributes redirectAttributes){
+
+        if(subdirectory!=null && !subdirectory.isEmpty()) {
+            redirectAttributes.addAttribute("subdirectory", subdirectory);
+        }
+
+        String[] pathArray = pathList.split(",");
 
         String[] deleteFilesPath = Arrays.stream(pathArray)
                 .filter(s -> !s.equals(" "))

@@ -2,6 +2,7 @@ package com.example.googledriveclone.services.Impl;
 
 import com.example.googledriveclone.services.MinioService;
 import com.example.googledriveclone.utils.MapperMinio;
+import com.example.googledriveclone.utils.MinioHelper;
 import com.example.googledriveclone.utils.MinioObject;
 import io.minio.*;
 import io.minio.errors.*;
@@ -38,7 +39,7 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public List<MinioObject> folderList(String userFolder){
+    public List<MinioObject> folderList(String userFolder) {
         Iterable<Result<Item>> results = minioClient
                 .listObjects(
                         ListObjectsArgs.builder()
@@ -52,14 +53,14 @@ public class MinoServicwImpl implements MinioService {
     @Override
     public boolean createFolder(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
 
-        if(folderExist(folderName)){
+        if (folderExist(folderName)) {
             return false;
         }
 
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucket)
-                        .object(folderName+"/")
+                        .object(folderName + "/")
                         .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                         .build());
 
@@ -74,9 +75,9 @@ public class MinoServicwImpl implements MinioService {
     @Override
     public void deleteFolder(String[] deleteFilesPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
 
-        List<DeleteObject> objects = getDeleteObjects(deleteFilesPath);
+        List<DeleteObject> objects = buildDeleteObjects(deleteFilesPath);
 
-        Iterable<Result<DeleteError>> results =minioClient.removeObjects(
+        Iterable<Result<DeleteError>> results = minioClient.removeObjects(
                 RemoveObjectsArgs.builder().bucket(bucket).objects(objects).build());
 
         //TODO объекты не удаляются без этого цикла?
@@ -87,20 +88,19 @@ public class MinoServicwImpl implements MinioService {
     }
 
 
-
     @Override
     public Map<String, String> search(String userDirectory, String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         //TODO  проверка на папку
-        var foundFilesMap = new HashMap<String, String>();
-        var results = objectListRecursive(userDirectory);
+        Map<String, String> foundFilesMap = new HashMap<>();
+        Iterable<Result<Item>> results = objectListRecursive(userDirectory);
 
         for (Result<Item> itemResult : results) {
             var objectName = itemResult.get().objectName();
 
-            if (objectName.indexOf(query)!=-1){
-                var path = objectName.substring(0, objectName.indexOf(query)+query.length());
+            if (objectName.indexOf(query) != -1) {
+                var path = objectName.substring(0, objectName.indexOf(query) + query.length());
 
-                if(!foundFilesMap.containsKey(path))
+                if (!foundFilesMap.containsKey(path))
                     foundFilesMap.put(path, objectName);
 
             }
@@ -112,7 +112,7 @@ public class MinoServicwImpl implements MinioService {
     @Override
     public boolean uploadFile(String userDirectory, MultipartFile[] files) {
         try {
-            for (MultipartFile file : files ) {
+            for (MultipartFile file : files) {
 
                 InputStream in = new ByteArrayInputStream(file.getBytes());
                 String fileName = file.getOriginalFilename();
@@ -121,9 +121,9 @@ public class MinoServicwImpl implements MinioService {
                         PutObjectArgs
                                 .builder()
                                 .bucket(bucket)
-                                .object(userDirectory+"/"+fileName)
+                                .object(userDirectory + "/" + fileName)
                                 .stream(
-                                        in,  file.getSize(), -1)
+                                        in, file.getSize(), -1)
                                 .contentType(file.getContentType())
                                 .build()
                 );
@@ -141,11 +141,14 @@ public class MinoServicwImpl implements MinioService {
 
     @Override
     public void renameFile(String filePath, String fileNewName) {
+
+        String newFilePath = MinioHelper.createNewFilePath(filePath, fileNewName);
+
         try {
             minioClient.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(bucket)
-                            .object(fileNewName)
+                            .object(newFilePath)
                             .source(
                                     CopySource.builder()
                                             .bucket(bucket)
@@ -154,6 +157,7 @@ public class MinoServicwImpl implements MinioService {
                             .build());
 
             deleteFolder(new String[]{filePath});
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -173,24 +177,29 @@ public class MinoServicwImpl implements MinioService {
     }
 
     /**
-     * Рекрсивним методом обходить все папки и сосбавляет список файлов
+     * Рекрсивним методом обходить все папки и составляет список файлов
+     *
      * @param deleteFilesPath массив содержающий путь к файлам и папкам для удаления
      * @return List<DeleteObject>
      */
     @NonNull
-    private List<DeleteObject> getDeleteObjects(String[] deleteFilesPath) {
+    private List<DeleteObject> buildDeleteObjects(String[] deleteFilesPath) {
         List<DeleteObject> objects = new LinkedList<>();
 
-        for (String path: deleteFilesPath) {
+        for (String path : deleteFilesPath) {
 
             var results = objectListRecursive(path);
+
             for (Result<Item> itemResult : results) {
+
                 try {
                     objects.add(new DeleteObject(itemResult.get().objectName()));
-
+                } catch (NoSuchElementException e) {
+                    log.warn("Empty result for path {}: {}");
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Error creating DeleteObject for path " + path, e);
                 }
+
             }
         }
         return objects;

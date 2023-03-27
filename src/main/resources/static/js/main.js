@@ -106,10 +106,10 @@ const editBtn = document.querySelectorAll(".edit-btn");
 editBtn.forEach(btn=>{
     btn.addEventListener("click",()=>{
         let fileName = btn.parentElement.querySelector('p').textContent
-
+        let path = btn.parentElement.dataset.path
         const params = getSubdirectory();
 
-        document.querySelector('#from__rename_path_input').value=fileName;
+        document.querySelector('#from__rename_path_input').value=path;
         document.querySelector('#from__rename_input').value=fileName;
         document.querySelector('#from__rename_subdirectory').value=params.subdirectory;
 

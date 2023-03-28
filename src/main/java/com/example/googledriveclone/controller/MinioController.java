@@ -125,6 +125,7 @@ public class MinioController {
     public String rename(
             @RequestParam("filePath") String filePath,
             @RequestParam("fileName") String fileName,
+            @RequestParam("type") String objectType,
             @RequestParam(value = "subdirectory", required = false) String subdirectory,
             RedirectAttributes redirectAttributes
             ){
@@ -133,7 +134,11 @@ public class MinioController {
             redirectAttributes.addAttribute("subdirectory", subdirectory);
         }
 
-        minioService.renameFile(filePath, fileName);
+        if(objectType.equals("file")) {
+            minioService.renameFile(filePath, fileName);
+        }else {
+            minioService.renameDirectory(filePath, fileName);
+        }
 
         return "redirect:/files";
     }

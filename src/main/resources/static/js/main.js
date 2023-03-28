@@ -104,6 +104,12 @@ editBtn.forEach(btn => {
         let fileName = btn.parentElement.querySelector('p').textContent
         let path = btn.parentElement.dataset.path
 
+        if(btn.parentElement.classList.contains("dir")) {
+            document.querySelector("#form__rename_type").value = "dir"
+        }else {
+            document.querySelector("#form__rename_type").value = "file"
+        }
+
         document.querySelector('#from__rename_path_input').value = path;
         document.querySelector('#from__rename_input').value = fileName;
         document.querySelector('#from__rename_subdirectory').value = params.subdirectory;

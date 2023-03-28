@@ -13,8 +13,6 @@ import java.util.Map;
 
 public interface MinioService {
 
-    boolean isBucketExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException ;
-
     List<MinioObject> folderList(String userFolder);
 
     Map<String, String> search(String userDirectory, String userFolder) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException;
@@ -28,4 +26,6 @@ public interface MinioService {
     boolean uploadFile(String userDirectory, MultipartFile[] file);
 
     void renameFile(String filePath, String fileNewName);
+
+    void renameDirectory(String filePath, String fileName);
 }

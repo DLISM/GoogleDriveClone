@@ -32,11 +32,6 @@ public class MinoServicwImpl implements MinioService {
     @Autowired
     private MinioClient minioClient;
 
-    @Override
-    public boolean isBucketExist() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        return minioClient
-                .bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
-    }
 
     @Override
     public List<MinioObject> folderList(String userFolder) {
@@ -92,7 +87,7 @@ public class MinoServicwImpl implements MinioService {
     public Map<String, String> search(String userDirectory, String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
         //TODO  проверка на папку
         Map<String, String> foundFilesMap = new HashMap<>();
-        Iterable<Result<Item>> results = objectListRecursive(userDirectory);
+        Iterable<Result<Item>> results = getObjectsRecursive(userDirectory);
 
         for (Result<Item> itemResult : results) {
             var objectName = itemResult.get().objectName();
@@ -159,11 +154,43 @@ public class MinoServicwImpl implements MinioService {
             deleteFolder(new String[]{filePath});
 
         } catch (Exception e) {
+            log.error("Failed to rename file");
             throw new RuntimeException(e);
         }
     }
 
-    private Iterable<Result<Item>> objectListRecursive(String userDirectory) {
+    @Override
+    public void renameDirectory(String dirPath, String dirNewName) {
+        Iterable<Result<Item>> objectsInDirectory = getObjectsRecursive(dirPath);
+
+        objectsInDirectory.forEach(
+                object->{
+                    try {
+                        String objectName = object.get().objectName();
+                        String objectNewName = MinioHelper.createNewDirectoryPath(dirPath, dirNewName, objectName);
+
+                        minioClient.copyObject(
+                                CopyObjectArgs.builder()
+                                        .bucket(bucket)
+                                        .object(objectNewName)
+                                        .source(
+                                                CopySource.builder()
+                                                        .bucket(bucket)
+                                                        .object(objectName)
+                                                        .build())
+                                        .build());
+
+                        deleteFolder(new String[]{objectName});
+
+                    } catch (Exception e) {
+                        log.error("Failed to rename folder");
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+    }
+
+    private Iterable<Result<Item>> getObjectsRecursive(String userDirectory) {
         Iterable<Result<Item>> results = minioClient
                 .listObjects(
                         ListObjectsArgs
@@ -188,7 +215,7 @@ public class MinoServicwImpl implements MinioService {
 
         for (String path : deleteFilesPath) {
 
-            var results = objectListRecursive(path);
+            var results = getObjectsRecursive(path);
 
             for (Result<Item> itemResult : results) {
 

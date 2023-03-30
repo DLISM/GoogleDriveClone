@@ -83,3 +83,7 @@
     margin-bottom: 0 !important;
     margin-left: 20px;
 }
+.list-group-item{
+    display: flex;
+    justify-content: space-between;
+}

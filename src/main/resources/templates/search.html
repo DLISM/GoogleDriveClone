@@ -11,7 +11,8 @@
 
     <ul class="list-group list-group-flush">
         <li class="list-group-item" th:each="item : ${files}">
-            <span th:text="${item.getValue()}"></span>
+            <span th:text="${item.getValue().getName()}"></span>
+            <span th:text="${item.getValue().getPath()}"></span>
         </li>
     </ul>
 </div>

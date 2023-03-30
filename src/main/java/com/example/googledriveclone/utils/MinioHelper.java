@@ -1,5 +1,6 @@
 package com.example.googledriveclone.utils;
 
+import lombok.Builder;
 import lombok.extern.log4j.Log4j;
 
 import java.nio.file.Path;
@@ -14,11 +15,16 @@ public final class MinioHelper {
         return parent.resolve(fileNewName).toString();
     }
 
+    @Builder
     public static String createNewDirectoryPath(String dirPath, String dirNewName, String objectName) {
         Path path = Paths.get(dirPath);
         Path parent = path.getParent();
         String newPath = parent.resolve(dirNewName).toString();
 
         return objectName.replaceFirst(dirPath, newPath+"/");
+    }
+
+    public static String getName(String path) {
+        return Paths.get(path).getFileName().toString();
     }
 }

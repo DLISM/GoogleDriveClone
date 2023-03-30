@@ -25,8 +25,14 @@ public class MapperMinio {
                         try {
                             String path = result.get().objectName();
                             if (path != null && !path.isEmpty()) {
-                                String name = getName(path);
-                                return new MinioObject(name, path, result.get().isDir());
+                                String name = MinioHelper.getName(path);
+
+                                return MinioObject
+                                        .builder()
+                                        .name(name)
+                                        .path(path)
+                                        .isDirectory(result.get().isDir())
+                                        .build();
                             }
                             return null;
                         } catch (RuntimeException | ErrorResponseException | InsufficientDataException |
@@ -45,7 +51,5 @@ public class MapperMinio {
     }
 
 
-    private static String getName(String path) {
-        return Paths.get(path).getFileName().toString();
-    }
+
 }

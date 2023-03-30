@@ -11,6 +11,7 @@ import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,12 @@ import java.util.*;
 
 @Service
 @Log4j
-public class MinoServicwImpl implements MinioService {
+public class MinoServiceImpl implements MinioService {
     @Value("${spring.minio.bucket}")
     private String bucket;
 
     @Autowired
     private MinioClient minioClient;
-
 
     @Override
     public List<MinioObject> folderList(String userFolder) {
@@ -52,10 +52,12 @@ public class MinoServicwImpl implements MinioService {
             return false;
         }
 
+        String objectName = StringUtils.join(folderName, "/");
+
         minioClient.putObject(
                 PutObjectArgs.builder()
                         .bucket(bucket)
-                        .object(folderName + "/")
+                        .object(objectName)
                         .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                         .build());
 
@@ -63,7 +65,7 @@ public class MinoServicwImpl implements MinioService {
     }
 
     @Override
-    public boolean folderExist(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public boolean folderExist(String folderName){
         return folderList(folderName).iterator().hasNext();
     }
 
@@ -75,29 +77,38 @@ public class MinoServicwImpl implements MinioService {
         Iterable<Result<DeleteError>> results = minioClient.removeObjects(
                 RemoveObjectsArgs.builder().bucket(bucket).objects(objects).build());
 
-        //TODO объекты не удаляются без этого цикла?
         for (Result<DeleteError> result : results) {
             DeleteError error = result.get();
             log.warn("Error in deleting object " + error.objectName() + "; " + error.message());
         }
     }
 
-
     @Override
-    public Map<String, String> search(String userDirectory, String query) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
-        //TODO  проверка на папку
-        Map<String, String> foundFilesMap = new HashMap<>();
+    public Map<String, MinioObject> search(String userDirectory, String query) {
+
+        Map<String, MinioObject> foundFilesMap = new HashMap<>();
         Iterable<Result<Item>> results = getObjectsRecursive(userDirectory);
 
         for (Result<Item> itemResult : results) {
-            var objectName = itemResult.get().objectName();
+            try {
+                String objectName = itemResult.get().objectName();
+                if (objectName.indexOf(query) != -1) {
+                    String path = objectName.substring(0, objectName.indexOf(query) + query.length());
 
-            if (objectName.indexOf(query) != -1) {
-                var path = objectName.substring(0, objectName.indexOf(query) + query.length());
-
-                if (!foundFilesMap.containsKey(path))
-                    foundFilesMap.put(path, objectName);
-
+                    if (!foundFilesMap.containsKey(path)) {
+                        foundFilesMap.put(
+                                path,
+                                MinioObject
+                                        .builder()
+                                        .path(objectName)
+                                        .name(MinioHelper.getName(objectName))
+                                        .isDirectory(itemResult.get().isDir())
+                                        .build()
+                        );
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -111,12 +122,13 @@ public class MinoServicwImpl implements MinioService {
 
                 InputStream in = new ByteArrayInputStream(file.getBytes());
                 String fileName = file.getOriginalFilename();
+                String objectName = StringUtils.join(userDirectory, "/", fileName);
 
                 minioClient.putObject(
                         PutObjectArgs
                                 .builder()
                                 .bucket(bucket)
-                                .object(userDirectory + "/" + fileName)
+                                .object(objectName)
                                 .stream(
                                         in, file.getSize(), -1)
                                 .contentType(file.getContentType())
@@ -124,19 +136,16 @@ public class MinoServicwImpl implements MinioService {
                 );
 
             }
-
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed upload file");
+            throw new RuntimeException(e);
         }
-
-        return false;
     }
 
     @Override
     public void renameFile(String filePath, String fileNewName) {
-
         String newFilePath = MinioHelper.createNewFilePath(filePath, fileNewName);
 
         try {
@@ -164,7 +173,7 @@ public class MinoServicwImpl implements MinioService {
         Iterable<Result<Item>> objectsInDirectory = getObjectsRecursive(dirPath);
 
         objectsInDirectory.forEach(
-                object->{
+                object -> {
                     try {
                         String objectName = object.get().objectName();
                         String objectNewName = MinioHelper.createNewDirectoryPath(dirPath, dirNewName, objectName);
@@ -215,10 +224,9 @@ public class MinoServicwImpl implements MinioService {
 
         for (String path : deleteFilesPath) {
 
-            var results = getObjectsRecursive(path);
+            Iterable<Result<Item>> results = getObjectsRecursive(path);
 
             for (Result<Item> itemResult : results) {
-
                 try {
                     objects.add(new DeleteObject(itemResult.get().objectName()));
                 } catch (NoSuchElementException e) {
@@ -226,7 +234,6 @@ public class MinoServicwImpl implements MinioService {
                 } catch (Exception e) {
                     throw new RuntimeException("Error creating DeleteObject for path " + path, e);
                 }
-
             }
         }
         return objects;

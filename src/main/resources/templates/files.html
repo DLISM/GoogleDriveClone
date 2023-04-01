@@ -6,9 +6,11 @@
 <body>
 <div th:replace="/template-part/navigation-menu :: nav"></div>
 
-<div class="container">
+<div class="container main">
 
     <div th:replace="/template-part/files-page-top-control :: files-control"></div>
+
+    <div><a href="/files">Файлы/</a></div>
 
     <div class="user-files">
         <div th:each="item : ${files}" class="file-item" th:classappend="${item.isDirectory()} ? dir" th:attr="data-path=${item.getPath()}">

@@ -2,6 +2,7 @@ package com.example.googledriveclone.controller;
 
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
+import com.example.googledriveclone.utils.MinioHelper;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,11 @@ public class MinioController {
                                    @RequestParam(value = "createFailed", required = false) boolean createFailed,
                                    @RequestParam(value = "", required = false) String subdirectory) throws Exception{
 
-        String directory = getDirectory(user, subdirectory);
+        String directory = MinioHelper.getDirectory(user, subdirectory);
+
+        var dir = MinioHelper.createDirectoryTree(subdirectory);
+        log.info(dir);
+
 
         model.addAttribute("files", minioService.folderList(directory));
         model.addAttribute("user", user);
@@ -143,11 +148,5 @@ public class MinioController {
         return "redirect:/files";
     }
 
-    private String getDirectory(User user, String subdirectory) {
-        String directory = user.getUsername() + "/";
-        if (StringUtils.isNotBlank(subdirectory)) {
-            directory = subdirectory;
-        }
-        return directory;
-    }
+
 }

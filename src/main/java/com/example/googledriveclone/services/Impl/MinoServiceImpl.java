@@ -1,5 +1,8 @@
 package com.example.googledriveclone.services.Impl;
 
+import com.example.googledriveclone.exceptions.MinIoFileActionException;
+import com.example.googledriveclone.exceptions.MinIoFileNotFoundException;
+import com.example.googledriveclone.exceptions.MinIoFileUploadException;
 import com.example.googledriveclone.services.MinioService;
 import com.example.googledriveclone.utils.MapperMinio;
 import com.example.googledriveclone.utils.MinioHelper;
@@ -108,7 +111,7 @@ public class MinoServiceImpl implements MinioService {
                     }
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new MinIoFileNotFoundException("File search error");
             }
         }
 
@@ -140,7 +143,7 @@ public class MinoServiceImpl implements MinioService {
 
         } catch (Exception e) {
             log.error("Failed upload file");
-            throw new RuntimeException(e);
+            throw new MinIoFileUploadException("Failed upload file");
         }
     }
 
@@ -164,7 +167,7 @@ public class MinoServiceImpl implements MinioService {
 
         } catch (Exception e) {
             log.error("Failed to rename file");
-            throw new RuntimeException(e);
+            throw new MinIoFileActionException("Failed to rename file");
         }
     }
 
@@ -193,7 +196,7 @@ public class MinoServiceImpl implements MinioService {
 
                     } catch (Exception e) {
                         log.error("Failed to rename folder");
-                        throw new RuntimeException(e);
+                        throw new MinIoFileActionException("Failed to rename folder");
                     }
                 }
         );
@@ -232,7 +235,8 @@ public class MinoServiceImpl implements MinioService {
                 } catch (NoSuchElementException e) {
                     log.warn("Empty result for path {}: {}");
                 } catch (Exception e) {
-                    throw new RuntimeException("Error creating DeleteObject for path " + path, e);
+                    log.warn("Error creating DeleteObject");
+                    throw new MinIoFileActionException("Error creating DeleteObject for path " + path);
                 }
             }
         }

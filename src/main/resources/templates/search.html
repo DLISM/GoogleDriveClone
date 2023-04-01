@@ -5,11 +5,15 @@
 </head>
 <body>
 <div th:replace="/template-part/navigation-menu :: nav"></div>
-<div class="container">
+<div class="container main">
     <h2 th:if="${files.size()>0}">Результаты поиска</h2>
     <h2 th:unless="${files.size()>0}">По вашему запросу ничего не найдено</h2>
 
     <ul class="list-group list-group-flush">
+        <li class="list-group-item" >
+            <h5>Файл</h5>
+            <h5>Путь</h5>
+        </li>
         <li class="list-group-item" th:each="item : ${files}">
             <span th:text="${item.getValue().getName()}"></span>
             <span th:text="${item.getValue().getPath()}"></span>

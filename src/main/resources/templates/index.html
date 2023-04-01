@@ -5,8 +5,10 @@
 </head>
 <body>
 <div th:replace="/template-part/navigation-menu :: nav"></div>
-<h1>Главная страница</h1>
-<p th:text="${user}"></p>
+<div class="container main">
+    <h1>Главная страница</h1>
+    <p th:text="${user}"></p>
+</div>
 <div th:replace="/template-part/footer :: footer"></div>
 </body>
 </html>

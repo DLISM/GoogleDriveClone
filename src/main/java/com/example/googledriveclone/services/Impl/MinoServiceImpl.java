@@ -8,7 +8,6 @@ import com.example.googledriveclone.utils.MapperMinio;
 import com.example.googledriveclone.utils.MinioHelper;
 import com.example.googledriveclone.utils.MinioObject;
 import io.minio.*;
-import io.minio.errors.*;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -21,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Service
@@ -49,7 +45,7 @@ public class MinoServiceImpl implements MinioService {
     }
 
     @Override
-    public boolean createFolder(String folderName) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public boolean createFolder(String folderName){
 
         if (folderExist(folderName)) {
             return false;
@@ -57,12 +53,16 @@ public class MinoServiceImpl implements MinioService {
 
         String objectName = StringUtils.join(folderName, "/");
 
-        minioClient.putObject(
-                PutObjectArgs.builder()
-                        .bucket(bucket)
-                        .object(objectName)
-                        .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
-                        .build());
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectName)
+                            .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
+                            .build());
+        } catch (Exception e) {
+            throw new MinIoFileActionException("File creation failed. Folder name:" + folderName);
+        }
 
         return true;
     }
@@ -73,7 +73,7 @@ public class MinoServiceImpl implements MinioService {
     }
 
     @Override
-    public void deleteFolder(String[] deleteFilesPath) throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
+    public void deleteFolder(String[] deleteFilesPath) {
 
         List<DeleteObject> objects = buildDeleteObjects(deleteFilesPath);
 
@@ -81,7 +81,12 @@ public class MinoServiceImpl implements MinioService {
                 RemoveObjectsArgs.builder().bucket(bucket).objects(objects).build());
 
         for (Result<DeleteError> result : results) {
-            DeleteError error = result.get();
+            DeleteError error = null;
+            try {
+                error = result.get();
+            } catch (Exception e) {
+                throw new MinIoFileActionException("Error in deleting object " + error.objectName() + "; " + error.message());
+            }
             log.warn("Error in deleting object " + error.objectName() + "; " + error.message());
         }
     }

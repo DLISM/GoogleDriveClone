@@ -1,13 +1,15 @@
 package com.example.googledriveclone.utils;
 
 import com.example.googledriveclone.models.User;
-import lombok.Builder;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Log4j
 public final class MinioHelper {
@@ -47,6 +49,10 @@ public final class MinioHelper {
 
         if(StringUtils.isNotBlank(subdirectory)){
 
+            if(subdirectory.charAt(0)=='/'){
+                subdirectory=subdirectory.substring(1);
+            }
+
             String[] dirArray =  subdirectory.split("/");
             StringBuilder path = new StringBuilder("/");
 
@@ -54,8 +60,20 @@ public final class MinioHelper {
                 path.append(dirArray[i]+"/");
                 result.add(new UserDirectoryTree(dirArray[i], path.toString()));
             }
+
+            result.remove(0);
         }
 
         return result;
+    }
+
+    public static String[] getDeleteFilesPath(String pathList) {
+        String[] pathArray = pathList.split(",");
+
+        String[] deleteFilesPath = Arrays.stream(pathArray)
+                .map(StringUtils::trim)
+                .filter(StringUtils::isNotBlank)
+                .toArray(String[]::new);
+        return deleteFilesPath;
     }
 }

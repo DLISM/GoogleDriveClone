@@ -3,11 +3,17 @@
       xmlns:th="http://www.thymeleaf.org">
 <head th:replace="/template-part/header :: header">
 </head>
-<body>
+<body class="main-page">
 <div th:replace="/template-part/navigation-menu :: nav"></div>
-<div class="container main">
-    <h1>Главная страница</h1>
-    <p th:text="${user}"></p>
+
+<div class="main">
+    <div class="container">
+        <h1>GDrive</h1>
+        <h3>Сервис для хранения файлов</h3>
+    </div>
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
 </div>
 <div th:replace="/template-part/footer :: footer"></div>
 </body>

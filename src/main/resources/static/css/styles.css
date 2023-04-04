@@ -120,3 +120,9 @@ body{
 .main-page h3{
     color: #fff;
 }
+.profile-link{
+    margin-right: 30px;
+}
+.profile-link img{
+    margin-right: 10px;
+}

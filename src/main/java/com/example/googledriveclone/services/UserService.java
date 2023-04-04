@@ -3,6 +3,7 @@ package com.example.googledriveclone.services;
 import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.mapper.UserMapper;
 import com.example.googledriveclone.models.Role;
+import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,7 +35,7 @@ public class UserService implements UserDetailsService {
             return false;
         }
 
-        var user= userMapper.toEntity(userDto);
+        User user= userMapper.toEntity(userDto);
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setRoles(Collections.singleton(Role.USER));
         userRepository.save(user);

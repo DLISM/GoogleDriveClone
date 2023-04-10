@@ -6,7 +6,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - ./data:/data
+      - .:/var/data
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
@@ -29,6 +29,15 @@ services:
     volumes:
       - .:/var/minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
     command: server --console-address ":9001" /data
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      sh -c "mc alias set myminio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} && mc mb myminio/user-files && mc policy set download myminio/user-files"

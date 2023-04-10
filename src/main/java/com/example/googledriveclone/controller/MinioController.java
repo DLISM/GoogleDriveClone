@@ -2,6 +2,8 @@ package com.example.googledriveclone.controller;
 
 import com.example.googledriveclone.models.User;
 import com.example.googledriveclone.services.MinioService;
+import com.example.googledriveclone.utils.MinioHelper;
+import com.example.googledriveclone.utils.UserDirectoryTree;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Controller
 @RequestMapping("/files")
@@ -28,12 +30,14 @@ public class MinioController {
                                    Model model,
                                    @RequestParam(value = "createSuccess", required = false) boolean createSuccess,
                                    @RequestParam(value = "createFailed", required = false) boolean createFailed,
-                                   @RequestParam(value = "", required = false) String subdirectory) throws Exception{
+                                   @RequestParam(value = "", required = false) String subdirectory){
 
-        String directory = getDirectory(user, subdirectory);
+        String directory = MinioHelper.getDirectory(user, subdirectory);
+        List<UserDirectoryTree> currentDirectory = MinioHelper.createDirectoryTree(subdirectory);
 
         model.addAttribute("files", minioService.folderList(directory));
         model.addAttribute("user", user);
+        model.addAttribute("directory", currentDirectory);
         model.addAttribute("createSuccess", createSuccess);
         model.addAttribute("createFailed", createFailed);
 
@@ -44,7 +48,7 @@ public class MinioController {
     public RedirectView createFolderAction(@AuthenticationPrincipal User user,
                                            @ModelAttribute("folderName") String folderName,
                                            @RequestParam(value = "subdirectory", required = false) String subdirectory,
-                                           RedirectAttributes redirectAttributes) throws Exception {
+                                           RedirectAttributes redirectAttributes) {
 
         String newFolder = StringUtils.join(user.getUsername(), "/");
 
@@ -77,22 +81,15 @@ public class MinioController {
             redirectAttributes.addAttribute("subdirectory", subdirectory);
         }
 
-        String[] pathArray = pathList.split(",");
+        String[] deleteFilesPath = MinioHelper.getDeleteFilesPath(pathList);
 
-        String[] deleteFilesPath = Arrays.stream(pathArray)
-                .map(StringUtils::trim)
-                .filter(StringUtils::isNotBlank)
-                .toArray(String[]::new);
-
-        try {
-            minioService.deleteFolder(deleteFilesPath);
-            redirectAttributes.addAttribute("deleteSuccess", true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        minioService.deleteFolder(deleteFilesPath);
+        redirectAttributes.addAttribute("deleteSuccess", true);
 
         return "redirect:/files";
     }
+
+
 
     @GetMapping("/search")
     public String search(@AuthenticationPrincipal User user, Model model, @RequestParam("query") String query) throws Exception {
@@ -128,7 +125,7 @@ public class MinioController {
             @RequestParam("type") String objectType,
             @RequestParam(value = "subdirectory", required = false) String subdirectory,
             RedirectAttributes redirectAttributes
-            ){
+    ){
 
         if(StringUtils.isNotBlank(subdirectory)) {
             redirectAttributes.addAttribute("subdirectory", subdirectory);
@@ -143,11 +140,5 @@ public class MinioController {
         return "redirect:/files";
     }
 
-    private String getDirectory(User user, String subdirectory) {
-        String directory = user.getUsername() + "/";
-        if (StringUtils.isNotBlank(subdirectory)) {
-            directory = subdirectory;
-        }
-        return directory;
-    }
+
 }

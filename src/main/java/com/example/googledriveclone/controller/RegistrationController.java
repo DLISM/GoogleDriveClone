@@ -4,7 +4,6 @@ import com.example.googledriveclone.dto.UserDto;
 import com.example.googledriveclone.services.UserService;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,18 +15,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Log4j
 public class RegistrationController {
 
-    @Autowired
     private UserService userService;
 
+    public RegistrationController(UserService userService) {
+        this.userService = userService;
+    }
+
     @GetMapping("/registration")
-    private String index(Model model){
-        log.info("registration page loading");
+    public String showRegistrationForm(Model model){
+
         model.addAttribute("registrationForm", new UserDto());
         return "registration";
     }
 
     @PostMapping("/registration")
-    private String registration(@ModelAttribute("registrationForm") @Valid UserDto userDto,
+    public String registration(@ModelAttribute("registrationForm") @Valid UserDto userDto,
                                 BindingResult bindingResult,
                                 Model model
                                ){

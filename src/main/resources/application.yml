@@ -16,7 +16,7 @@ spring:
 
   minio:
     url: http://localhost:9001
-    bucket: user-files
+    bucket: files-bucket
     access-key: minioadmin
     secret-key: minioadmin
     port: 9000

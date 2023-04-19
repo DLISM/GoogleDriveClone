@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/template-part/header :: header">
+<head th:replace="template-part/header :: header">
 </head>
 <body>
-<div th:replace="/template-part/navigation-menu :: nav"></div>
+<div th:replace="template-part/navigation-menu :: nav"></div>
 <div class="main">
     <div class="container">
         <h1>Профиль пользователя <span th:text="${user.username}"></span></h1>
     </div>
 </div>
-<div th:replace="/template-part/footer :: footer"></div>
+<div th:replace="template-part/footer :: footer"></div>
 </body>
 </html>

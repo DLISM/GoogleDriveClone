@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/template-part/header :: header">
+<head th:replace="template-part/header :: header">
 </head>
 <body class="main-page">
-<div th:replace="/template-part/navigation-menu :: nav"></div>
+<div th:replace="template-part/navigation-menu :: nav"></div>
 
 <div class="main">
     <div class="container">
@@ -15,6 +15,6 @@
     <div class="wave"></div>
     <div class="wave"></div>
 </div>
-<div th:replace="/template-part/footer :: footer"></div>
+<div th:replace="template-part/footer :: footer"></div>
 </body>
 </html>

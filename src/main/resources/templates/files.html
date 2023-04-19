@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
-<head th:replace="/template-part/header :: header">
+<head th:replace="template-part/header :: header">
 </head>
 <body>
-<div th:replace="/template-part/navigation-menu :: nav"></div>
+<div th:replace="template-part/navigation-menu :: nav"></div>
 
 <div class="container main">
 
-    <div th:replace="/template-part/files-page-top-control :: files-control"></div>
+    <div th:replace="template-part/files-page-top-control :: files-control"></div>
 
     <div class="directory__tree">
         <a href="/files">Файлы</a>
@@ -39,10 +39,10 @@
         </div>
     </div>
 
-    <div th:replace="/template-part/renameForm::renameForm"></div>
+    <div th:replace="template-part/renameForm::renameForm"></div>
 
 </div>
 
-<div th:replace="/template-part/footer :: footer"></div>
+<div th:replace="template-part/footer :: footer"></div>
 </body>
 </html>

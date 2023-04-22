@@ -1,0 +1,18 @@
+Создаем сервис
+nano  /etc/systemd/system/google-drive-clone.service
+
+Запускаем сервис
+sudo systemctl daemon-reload
+sudo systemctl start my-spring-boot-app
+sudo systemctl enable my-spring-boot-app
+
+
+Запускаем крон
+crontab -e
+*/15 * * * * /bin/bash /home/user/check_app.sh >> /var/log/check_app.log 2>&1
+
+
+shell скрипт check_app.sh копируем в /home/user/check_app.sh
+
+
+
